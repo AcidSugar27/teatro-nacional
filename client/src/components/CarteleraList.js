@@ -54,6 +54,7 @@ export default function CarteleraList() {
                 <Typography variant="body2" color="textSecondary">{event.categoria}</Typography>
                 <Typography variant="body2" color="textSecondary">{event.fecha}</Typography>
                 <Typography variant="body2" color="textSecondary">{event.hora_inicio} - {event.hora_final}</Typography>
+                <Typography variant="body2" color="textSecondary">{event.sala_nombre}</Typography> 
               </div>
               <div>
                 <Button 

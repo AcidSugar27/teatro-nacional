@@ -1,39 +1,82 @@
-import React from 'react'
-import { AppBar, Button, Container, Toolbar, Typography } from '@mui/material'
-import {Box} from '@mui/material'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { AppBar, Button, Container, Toolbar, Typography, Box, MenuItem, Select } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState(null);
 
-    const navigate = useNavigate()
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch('http://localhost:4000/user', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                setUsername(data.username);
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+            });
+        }
+    }, []);
 
-  return (
-    <Box sx={{flexGrow: 1}}>
-        <AppBar position='static' color='transparent'>
-            <Container>
-                <Toolbar>
-                    <Typography variant='h6' sx={{ flexGrow: 1}}>
-                        <Link to='/' style={{textDecoration:'none', color:'#eee'}}>TEATRO NACIONAL</Link>
-                    </Typography>
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setUsername(null);
+        navigate('/login');
+    };
 
-                    <Button 
-                    variant='contained' 
-                    colors='primary' 
-                    onClick={() => navigate("/cartelera/new")}
-                    >
-                       Agregar a cartelera
-                    </Button>
-                    <Button color="inherit" component={Link} to="/login">
-                     Login
-                    </Button>
-                    <Button color="inherit" component={Link} to="/register">
-                     Register
-                    </Button>
+    return (
+        <Box sx={{ flexGrow: 1 }}>
+            <AppBar position="static" color="transparent">
+                <Container>
+                    <Toolbar>
+                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                            <Link to="/" style={{ textDecoration: 'none', color: '#eee' }}>TEATRO NACIONAL</Link>
+                        </Typography>
 
-                </Toolbar>
-       
-            </Container>
-        </AppBar>
-    </Box>
-  )
+                        <Select
+                            value=""
+                            displayEmpty
+                            style={{ marginRight: '10px' }}
+                            onChange={(e) => navigate(`/${e.target.value}`)}
+                        >
+                            <MenuItem value="" disabled>
+                                Opciones
+                            </MenuItem>
+                            <MenuItem value="cartelera/new">Agregar a Cartelera</MenuItem>
+                            <MenuItem value="sala/new">Agregar Sala</MenuItem>
+                            <MenuItem value="salas">Ver Salas</MenuItem>
+                        </Select>
+
+                        {username ? (
+                            <>
+                                <Typography variant="body1" sx={{ marginRight: '10px' }}>
+                                    Bienvenido, {username}
+                                </Typography>
+                                <Button color="inherit" onClick={handleLogout}>
+                                    Logout
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button color="inherit" component={Link} to="/login">
+                                    Login
+                                </Button>
+                                <Button color="inherit" component={Link} to="/register">
+                                    Register
+                                </Button>
+                            </>
+                        )}
+
+                    </Toolbar>
+                </Container>
+            </AppBar>
+        </Box>
+    );
 }

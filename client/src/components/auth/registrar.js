@@ -6,11 +6,17 @@ const Registrar = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
-    const [rol, setRol] = useState('');
+    const [rol, setRol] = useState('user');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleRegister = async () => {
         try {
+            if (!username || !password || !email) {
+                setError('Please fill in all fields');
+                return;
+            }
+
             const response = await fetch('http://localhost:4000/register', {
                 method: 'POST',
                 headers: {
@@ -20,14 +26,13 @@ const Registrar = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                // Redirige a la página de login
                 navigate('/login');
             } else {
-                // Maneja el error de registro
-                console.error(data.error);
+                setError(data.error);
             }
         } catch (error) {
             console.error('Error de red:', error);
+            setError('Network error. Please try again.');
         }
     };
 
@@ -56,6 +61,7 @@ const Registrar = () => {
                 onChange={(e) => setRol(e.target.value)} 
             />
             <Button onClick={handleRegister}>Registrar</Button>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
 };

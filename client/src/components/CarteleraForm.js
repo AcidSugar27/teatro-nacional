@@ -11,14 +11,23 @@ export default function CarteleraForm() {
       fecha: '',
       hora_inicio: '',
       hora_final: '',
-      imagen_url: ''
+      imagen_url: '',
+      sala_id: ''  // Add sala_id to state
     });
+
+    const [salas, setSalas] = useState([]);  // State for storing available salas
   
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(false);
   
     const navigate = useNavigate();
     const params = useParams();
+
+    const fetchSalas = async () => {
+        const response = await fetch('http://localhost:4000/sala');
+        const data = await response.json();
+        setSalas(data);
+    };
   
     const handleSubmit = async e => {
       e.preventDefault();
@@ -57,12 +66,14 @@ export default function CarteleraForm() {
         fecha: data.fecha,
         hora_inicio: data.hora_inicio,
         hora_final: data.hora_final,
-        imagen_url: data.imagen_url
+        imagen_url: data.imagen_url,
+        sala_id: data.sala_id  // Include sala_id when loading
       });
       setEditing(true);
     };
-  
+
     useEffect(() => {
+      fetchSalas();
       if (params.id) {
         loadCartelera(params.id);
       }
@@ -131,6 +142,24 @@ export default function CarteleraForm() {
                   onChange={handleChange}
                   inputProps={{ style: { color: 'black' } }}
                 />
+                <TextField
+                  select
+                  label="Sala"
+                  name="sala_id"
+                  value={cartelera.sala_id}
+                  onChange={handleChange}
+                  SelectProps={{
+                    native: true,
+                  }}
+                  sx={{ display: 'block', margin: '.5rem 0' }}
+                >
+                  <option value=""></option>
+                  {salas.map(sala => (
+                    <option key={sala.id} value={sala.id}>
+                      {sala.nombre}
+                    </option>
+                  ))}
+                </TextField>
                 <Button
                   variant='contained'
                   color='primary'
@@ -141,7 +170,8 @@ export default function CarteleraForm() {
                     !cartelera.fecha ||
                     !cartelera.hora_inicio ||
                     !cartelera.hora_final ||
-                    !cartelera.imagen_url
+                    !cartelera.imagen_url ||
+                    !cartelera.sala_id  // Make sala_id required
                   }
                 >
                   {loading ? <CircularProgress color='inherit' size={24} /> : editing ? 'Actualizar evento' : 'Crear evento'}
@@ -152,4 +182,4 @@ export default function CarteleraForm() {
         </Grid>
       </Grid>
     );
-  }
+}
