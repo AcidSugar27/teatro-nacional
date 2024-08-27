@@ -33,7 +33,7 @@ const sendVerificationEmail = (user, token) => {
 };
 
 const registrar = async (req, res) => {
-    const { username, password, email, rol } = req.body;
+    const { nombre, apellido, password, email, rol } = req.body;
     try {
         // Hash del password
         const salt = await bcrypt.genSalt(10);
@@ -44,8 +44,8 @@ const registrar = async (req, res) => {
         
         // Inserta el usuario en la base de datos
         const newUser = await pool.query(
-            'INSERT INTO users (username, password, email, rol, verification_token) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [username, hashedPassword, email, rol, verificationToken]
+            'INSERT INTO users (nombre, apellido, password, email, rol, verification_token) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [nombre, apellido, hashedPassword, email, rol, verificationToken]
         );
         
         // Enviar el correo de verificación
@@ -61,9 +61,9 @@ const registrar = async (req, res) => {
 };
 
 const loguear = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
-        const user = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -108,7 +108,7 @@ const getUserData = async (req, res) => {
         const userId = decoded.id;
 
         // Consultar la base de datos para obtener los datos del usuario
-        const user = await pool.query('SELECT username, email, rol FROM users WHERE id = $1', [userId]);
+        const user = await pool.query('SELECT nombre, apellido, email, rol FROM users WHERE id = $1', [userId]);
         
         if (user.rows.length === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -120,6 +120,5 @@ const getUserData = async (req, res) => {
         res.status(500).json({ error: 'Error del servidor' });
     }
 };
-
 
 module.exports = { registrar, loguear, verificarEmail, getUserData };

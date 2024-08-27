@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import * as React from 'react';
+import { useState } from 'react';
+import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Paper, Box, Grid, Typography, Container } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
+
+
+const defaultTheme = createTheme();
+
 const Registrar = () => {
-    const [username, setUsername] = useState('');
+    const [nombre, setNombre] = useState('');
+    const [apellido, setApellido] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [rol, setRol] = useState('user');
@@ -12,7 +20,7 @@ const Registrar = () => {
 
     const handleRegister = async () => {
         try {
-            if (!username || !password || !email) {
+            if (!nombre || !apellido || !password || !email) {
                 setError('Please fill in all fields');
                 return;
             }
@@ -22,7 +30,7 @@ const Registrar = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, password, email, rol })
+                body: JSON.stringify({ nombre, apellido, password, email, rol })
             });
             const data = await response.json();
             if (response.ok) {
@@ -37,33 +45,111 @@ const Registrar = () => {
     };
 
     return (
-        <div>
-            <h2>Registrar</h2>
-            <TextField 
-                label="Username" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
-            />
-            <TextField 
-                type="password" 
-                label="Password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-            />
-            <TextField 
-                label="Email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-            />
-            <TextField 
-                label="Rol" 
-                value={rol} 
-                onChange={(e) => setRol(e.target.value)} 
-            />
-            <Button onClick={handleRegister}>Registrar</Button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
-    );
-};
+        <ThemeProvider theme={defaultTheme}>
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <Box
+              sx={{
+                marginTop: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Registrarse
+              </Typography>
+              <Box component="form" noValidate onSubmit={handleRegister} sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      autoComplete="given-name"
+                      name="nombre"
+                      required
+                      fullWidth
+                      id="nombre"
+                      label="Nombre"
+                      autoFocus
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      required
+                      fullWidth
+                      id="apellido"
+                      label="Apellido"
+                      name="apellido"
+                      autoComplete="family-name"
+                      value={apellido}
+                      onChange={(e) => setApellido(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      required
+                      fullWidth
+                      id="email"
+                      label="Email Address"
+                      name="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      required
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      id="password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={<Checkbox value={rol} color="primary" />}
+                      label="Accept Terms and Conditions"
+                    />
+                  </Grid>
+                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  Registrarse
+                </Button>
+                {error && <Typography color="error" align="center">{error}</Typography>}
+                <Grid container justifyContent="flex-end">
+                  <Grid item>
+                    <Link href="#" variant="body2">
+                      ¿Ya tienes una cuenta? Inicia sesión
+                    </Link>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Box>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
+              {'Copyright © '}
+              <Link color="inherit" href="https://mui.com/">
+                Tu Sitio Web
+              </Link>{' '}
+              {new Date().getFullYear()}
+              {'.'}
+            </Typography>
+          </Container>
+        </ThemeProvider>
+      );
+    }
 
 export default Registrar;
