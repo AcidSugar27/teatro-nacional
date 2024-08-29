@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'eliasamarante27@gmail.com',
-        pass: 'mlck cszc tkxs uymt'
+        pass: 'epnd ctfg euil nnpu'
     }
 });
 
@@ -35,67 +35,95 @@ const sendVerificationEmail = (user, token) => {
 const registrar = async (req, res) => {
     const { nombre, apellido, password, email, rol } = req.body;
     try {
-        // Hash del password
+        if (!nombre || !apellido || !password || !email) {
+            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+        }
+
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: 'El email ya está registrado' });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        // Genera el token de verificación
         const verificationToken = crypto.randomBytes(32).toString('hex');
         
-        // Inserta el usuario en la base de datos
         const newUser = await pool.query(
             'INSERT INTO users (nombre, apellido, password, email, rol, verification_token) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [nombre, apellido, hashedPassword, email, rol, verificationToken]
         );
         
-        // Enviar el correo de verificación
         sendVerificationEmail(newUser.rows[0], verificationToken);
         
-        // Genera el token de autenticación
         const token = jwt.sign({ id: newUser.rows[0].id, rol: newUser.rows[0].rol }, process.env.JWT_SECRET);
-        res.json({ token });
+        res.status(201).json({ token });
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Error del servidor' });
     }
 };
 
 const loguear = async (req, res) => {
     const { email, password } = req.body;
     try {
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Por favor, ingrese email y contraseña' });
+        }
+
         const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        if (!user.rows[0].email_verified) {
+            return res.status(403).json({ error: 'Verifique su email antes de iniciar sesión' });
         }
         
         const isMatch = await bcrypt.compare(password, user.rows[0].password);
         if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Credenciales inválidas' });
         }
         
         const token = jwt.sign({ id: user.rows[0].id, rol: user.rows[0].rol }, process.env.JWT_SECRET);
         res.json({ token });
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Error del servidor' });
     }
 };
 
 const verificarEmail = async (req, res) => {
     const { token } = req.query;
+
+    if (!token) {
+        return res.status(400).json({ error: 'Token is missing' });
+    }
+
     try {
+        // Actualizar el estado del email y limpiar el token si el email no ha sido verificado aún
         const result = await pool.query(
-            'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING *',
+            'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 AND email_verified = FALSE RETURNING *',
             [token]
         );
-        
+
         if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Invalid or already used token' });
+            // Verifica si el token es inválido o si el email ya ha sido verificado
+            const checkToken = await pool.query(
+                'SELECT * FROM users WHERE verification_token = $1',
+                [token]
+            );
+
+            if (checkToken.rows.length === 0) {
+                return res.status(400).json({ error: 'Invalid token' });
+            } else {
+                return res.status(400).json({ error: 'Token already used or email already verified' });
+            }
         }
         
         res.json({ message: 'Email successfully verified' });
     } catch (error) {
-        console.error(error.message);
+        console.error('Error verifying email:', error.message);
         res.status(500).json({ error: 'Server error' });
     }
 };

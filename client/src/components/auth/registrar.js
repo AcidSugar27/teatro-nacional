@@ -18,31 +18,47 @@ const Registrar = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleRegister = async () => {
-        try {
-            if (!nombre || !apellido || !password || !email) {
-                setError('Please fill in all fields');
-                return;
-            }
-
-            const response = await fetch('http://localhost:4000/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre, apellido, password, email, rol })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                navigate('/login');
-            } else {
-                setError(data.error);
-            }
-        } catch (error) {
-            console.error('Error de red:', error);
-            setError('Network error. Please try again.');
-        }
-    };
+    const handleRegister = async (event) => {
+      event.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
+      setError('');
+  
+      if (!nombre || !apellido || !email || !password) {
+          setError('Todos los campos son obligatorios');
+          return;
+      }
+  
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+          setError('Ingrese un email válido');
+          return;
+      }
+  
+      if (password.length < 6) {
+          setError('La contraseña debe tener al menos 6 caracteres');
+          return;
+      }
+  
+      try {
+          const response = await fetch('http://localhost:4000/register', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ nombre, apellido, password, email, rol })
+          });
+          const data = await response.json();
+  
+          if (response.ok) {
+              navigate('/login');
+          } else {
+              setError(data.error || 'Ocurrió un error durante el registro');
+          }
+      } catch (error) {
+          console.error('Error de red:', error);
+          setError('Error de conexión. Por favor, intente de nuevo.');
+      }
+  };
+  
 
     return (
         <ThemeProvider theme={defaultTheme}>

@@ -17,7 +17,7 @@ export default function Navbar() {
             })
             .then(response => response.json())
             .then(data => {
-                setUsername(data.username);
+                setUsername(data.nombre);
             })
             .catch(error => {
                 console.error('Error fetching user data:', error);

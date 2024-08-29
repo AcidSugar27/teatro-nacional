@@ -12,26 +12,37 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
-        try {
-            const res = await fetch('http://localhost:4000/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('token', data.token);
-                navigate('/');
-            } else {
-                console.error(data.error);
-            }
-        } catch (error) {
-            console.error('Error de red:', error);
-        }
-    };
+    const handleLogin = async (event) => {
+      event.preventDefault();
+      setError('');
+  
+      if (!email || !password) {
+          setError('Por favor, ingrese email y contraseña');
+          return;
+      }
+  
+      try {
+          const response = await fetch('http://localhost:4000/login', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ email, password })
+          });
+          const data = await response.json();
+  
+          if (response.ok) {
+              localStorage.setItem('token', data.token);
+              navigate('/');
+          } else {
+              setError(data.error || 'Credenciales inválidas');
+          }
+      } catch (error) {
+          console.error('Error de red:', error);
+          setError('Error de conexión. Por favor, intente de nuevo.');
+      }
+  };
+  
     return (
         <ThemeProvider theme={defaultTheme}>
           <Container component="main" maxWidth="xs">
@@ -48,7 +59,7 @@ const Login = () => {
                 <LockOutlinedIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Registrarse
+                Login
               </Typography>
               <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 3 }}>
                 <TextField
