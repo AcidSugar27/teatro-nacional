@@ -149,4 +149,80 @@ const getUserData = async (req, res) => {
     }
 };
 
-module.exports = { registrar, loguear, verificarEmail, getUserData };
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'No se encontró una cuenta con ese email' });
+        }
+
+        const user = userResult.rows[0]; // Obtener el usuario de la base de datos
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        await pool.query(
+            'UPDATE users SET reset_password_token = $1 WHERE email = $2',
+            [resetToken, email]
+        );
+
+        const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+        const mailOptions = {
+            from: 'eliasamarante27@gmail.com',
+            to: email,
+            subject: 'Recuperación de Contraseña',
+            text: `Para restablecer su contraseña, haga clic en el siguiente enlace: ${resetUrl}`,
+            html: `<a href="${resetUrl}">Restablecer Contraseña</a>`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error enviando correo:', error);
+                return res.status(500).json({ error: 'Error al enviar el correo de recuperación' });
+            } else {
+                console.log('Correo enviado:', info.response);
+                return res.status(200).json({ message: 'Correo de recuperación enviado' });
+            }
+        });
+    } catch (error) {
+        console.error('Error del servidor:', error);
+        return res.status(500).json({ error: 'Error del servidor' });
+    }
+};
+
+
+const resetPassword = async (req, res) => {
+    const { token } = req.query; // El token de restablecimiento viene como query param
+    const { newPassword } = req.body; // La nueva contraseña viene en el cuerpo de la solicitud
+
+    try {
+        // Buscar el usuario que tiene el token
+        const userResult = await pool.query(
+            'SELECT * FROM users WHERE reset_password_token = $1',
+            [token]
+        );
+
+        // Si no se encuentra el usuario, devolvemos un error
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({ error: 'Token inválido' });
+        }
+
+        // Generar el hash de la nueva contraseña
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Actualizar la contraseña y limpiar el token
+        await pool.query(
+            'UPDATE users SET password = $1, reset_password_token = NULL WHERE id = $2',
+            [hashedPassword, userResult.rows[0].id]
+        );
+
+        // Responder con un mensaje de éxito
+        res.json({ message: 'Contraseña restablecida exitosamente' });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+};
+
+
+module.exports = { registrar, loguear, verificarEmail, getUserData, resetPassword, forgotPassword };
