@@ -87,6 +87,12 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 {error && <Typography color="error" align="center">{error}</Typography>}
+                <Grid item xs>
+                  <Button variant="text" onClick={() => navigate('/forgot-password')}>
+                                    ¿Olvidaste tu contraseña?
+                  </Button>
+                </Grid>
+                
                 <Button
                   type="submit"
                   fullWidth
@@ -96,12 +102,13 @@ const Login = () => {
                   Loguearse
                 </Button>
                 <Grid container justifyContent="flex-end">
-                  <Grid item>
-                    <Button variant="text" onClick={() => navigate('/register')}>
-                      ¿Ya tienes una cuenta? Inicia sesión
-                    </Button>
-                  </Grid>
-                </Grid>
+                            
+                            <Grid item>
+                                <Button variant="text" onClick={() => navigate('/register')}>
+                                    ¿Ya tienes una cuenta? Inicia sesión
+                                </Button>
+                            </Grid>
+                        </Grid>
               </Box>
             </Box>
           </Container>

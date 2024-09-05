@@ -9,8 +9,8 @@ import SalaForm from './components/salas/SalaForm'
 import SalaList from './components/salas/SalaList'
 import Login from './components/auth/login'
 import Registrar from './components/auth/registrar'
-
-
+import ForgotPassword from './components/auth/olvidarps'
+import ResetPassword from './components/auth/reiniciarps'
 
 export default function App() {
   return (
@@ -28,7 +28,8 @@ export default function App() {
        <Route path="/sala/:id/edit" element={<SalaForm />} />
        <Route path='/login' element={<Login/>} />
       <Route path='/register' element={<Registrar/>} /> 
-    
+      <Route path="/forgot-password" element={<ForgotPassword/>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
        
       </Routes>
      </Container>
