@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
     const navigate = useNavigate();
-    const [username, setUsername] = useState(null);
+    const [nombre, setNombre] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -17,7 +17,7 @@ export default function Navbar() {
             })
             .then(response => response.json())
             .then(data => {
-                setUsername(data.nombre);
+                setNombre(data.nombre);
             })
             .catch(error => {
                 console.error('Error fetching user data:', error);
@@ -27,7 +27,7 @@ export default function Navbar() {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        setUsername(null);
+        setNombre(null);
         navigate('/login');
     };
 
@@ -54,10 +54,10 @@ export default function Navbar() {
                             <MenuItem value="salas">Ver Salas</MenuItem>
                         </Select>
 
-                        {username ? (
+                        {nombre ? (
                             <>
                                 <Typography variant="body1" sx={{ marginRight: '10px' }}>
-                                    Bienvenido, {username}
+                                    Bienvenido, {nombre}
                                 </Typography>
                                 <Button color="inherit" onClick={handleLogout}>
                                     Logout
