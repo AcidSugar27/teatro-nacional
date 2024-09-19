@@ -36,15 +36,17 @@ const getAllCartelera = async (req, res, next) => {
 };
 
 const createCartelera = async (req, res, next) => {
-    const { nombre, categoria, fecha, hora_inicio, hora_final, imagen_url, sala_id } = req.body;
+    const { nombre, categoria, fecha_inicio, fecha_final, imagen_url, sala_id } = req.body; 
+    console.log("Datos recibidos:", req.body);// ahora usamos fecha_rango
     try {
         const result = await pool.query(
-            "INSERT INTO cartelera (nombre, categoria, fecha, hora_inicio, hora_final, imagen_url, sala_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [nombre, categoria, fecha, hora_inicio, hora_final, imagen_url, sala_id]
+            "INSERT INTO cartelera (nombre, categoria, fecha_inicio, fecha_final, imagen_url, sala_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [nombre, categoria, fecha_inicio, fecha_final, imagen_url, sala_id]
         );
 
         res.json(result.rows[0]);
     } catch (error) {
+        console.error("Error al crear cartelera:", error);
         next(error);
     }
 };
@@ -69,10 +71,10 @@ const deleteCartelera = async (req, res, next) => {
 const updateCartelera = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { nombre, categoria, fecha, hora_inicio, hora_final, imagen_url, sala_id } = req.body;
+        const { nombre, categoria, fecha_inicio, fecha_final, imagen_url, sala_id } = req.body; // ahora usamos fecha_rango
         const result = await pool.query(
-            "UPDATE cartelera SET nombre = $1, categoria = $2, fecha = $3, hora_inicio = $4, hora_final = $5, imagen_url = $6, sala_id = $7 WHERE id = $8 RETURNING *",
-            [nombre, categoria, fecha, hora_inicio, hora_final, imagen_url, sala_id, id]
+            "UPDATE cartelera SET nombre = $1, categoria = $2, fecha_inicio = $3, fecha_final = $4, imagen_url = $5, sala_id = $6 WHERE id = $7 RETURNING *",
+            [nombre, categoria, fecha_inicio, fecha_final, imagen_url, sala_id, id]
         );
 
         if (result.rowCount === 0) {

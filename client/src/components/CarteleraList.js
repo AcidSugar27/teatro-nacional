@@ -1,18 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import { Typography,Card,CardContent, Button, Grid, CardMedia } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Typography, Card, CardContent, Button, Grid, CardMedia } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 export default function CarteleraList() {
-
-  const [cartelera, setCartelera] = useState([]);
+  const [carteleras, setCarteleras] = useState([]);
   const navigate = useNavigate();
 
-  const loadCartelera = async () => {
-    const response = await fetch('http://localhost:4000/cartelera');
-    const data = await response.json();
-    setCartelera(data);
+  // Fetch carteleras from the API
+  const loadCarteleras = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/cartelera');
+      const data = await response.json();
+      setCarteleras(data);
+    } catch (error) {
+      console.error('Error loading carteleras:', error);
+    }
   };
 
+  // Delete a specific cartelera
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`http://localhost:4000/cartelera/${id}`, {
@@ -23,40 +29,50 @@ export default function CarteleraList() {
         throw new Error('Error deleting the event');
       }
 
-      setCartelera(cartelera.filter((event) => event.id !== id));
+      setCarteleras(carteleras.filter((event) => event.id !== id));
     } catch (error) {
       console.error('Failed to delete the event:', error);
     }
   };
 
   useEffect(() => {
-    loadCartelera();
+    loadCarteleras();
   }, []);
 
   return (
-    <Grid container spacing={2}>
-      {cartelera.map((event) => (
+    <Grid container spacing={2} padding={2}>
+      {carteleras.map((event) => (
         <Grid item xs={12} sm={6} md={4} key={event.id}>
-          <Card style={{ marginBottom: '.7rem', backgroundColor: 'white' }}>
+          <Card style={{ marginBottom: '1rem', backgroundColor: '#f5f5f5' }}>
             <CardMedia
               component="img"
               alt={event.nombre}
-              height="140"
+              height="200"
               image={event.imagen_url}
               title={event.nombre}
-              sx={{
+              sx={{ 
+                width: '100%', 
+                height: '200px',
                 objectFit: 'fill'
               }}
             />
-            <CardContent style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <Typography variant="h5">{event.nombre}</Typography>
-                <Typography variant="body2" color="textSecondary">{event.categoria}</Typography>
-                <Typography variant="body2" color="textSecondary">{event.fecha}</Typography>
-                <Typography variant="body2" color="textSecondary">{event.hora_inicio} - {event.hora_final}</Typography>
-                <Typography variant="body2" color="textSecondary">{event.sala_nombre}</Typography> 
-              </div>
-              <div>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                {event.nombre}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Categoría: {event.categoria}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {dayjs(event.fecha_inicio).format('DD MMM YYYY')}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {dayjs(event.fecha_inicio).format('HH:mm')} - {dayjs(event.fecha_final).format('HH:mm')}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Sala: {event.sala_nombre}
+              </Typography>
+              <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                 <Button 
                   variant='contained' 
                   color='primary' 
@@ -68,7 +84,6 @@ export default function CarteleraList() {
                   variant='contained' 
                   color='secondary' 
                   onClick={() => handleDelete(event.id)}
-                  style={{ marginLeft: '.5rem' }}
                 >
                   Eliminar
                 </Button>
