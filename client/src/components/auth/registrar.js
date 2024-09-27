@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Paper, Box, Grid, Typography, Container } from '@mui/material';
+import { Avatar, Button, CssBaseline, TextField, Link,  Box, Grid, Typography, Container } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -49,6 +49,7 @@ const Registrar = () => {
           const data = await response.json();
   
           if (response.ok) {
+              alert('Registro exitoso. Ahora puedes iniciar sesión.');
               navigate('/login');
           } else {
               setError(data.error || 'Ocurrió un error durante el registro');
@@ -110,7 +111,7 @@ const Registrar = () => {
                       required
                       fullWidth
                       id="email"
-                      label="Email Address"
+                      label="Direccion de correo"
                       name="email"
                       autoComplete="email"
                       value={email}
@@ -122,7 +123,7 @@ const Registrar = () => {
                       required
                       fullWidth
                       name="password"
-                      label="Password"
+                      label="contraseña"
                       type="password"
                       id="password"
                       autoComplete="new-password"
@@ -131,10 +132,7 @@ const Registrar = () => {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <FormControlLabel
-                      control={<Checkbox value={rol} color="primary" />}
-                      label="Accept Terms and Conditions"
-                    />
+                    
                   </Grid>
                 </Grid>
                 <Button
@@ -148,21 +146,14 @@ const Registrar = () => {
                 {error && <Typography color="error" align="center">{error}</Typography>}
                 <Grid container justifyContent="flex-end">
                   <Grid item>
-                    <Link href="#" variant="body2">
+                    <Link href="/login" variant="body2">
                       ¿Ya tienes una cuenta? Inicia sesión
                     </Link>
                   </Grid>
                 </Grid>
               </Box>
             </Box>
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
-              {'Copyright © '}
-              <Link color="inherit" href="https://mui.com/">
-                Tu Sitio Web
-              </Link>{' '}
-              {new Date().getFullYear()}
-              {'.'}
-            </Typography>
+           
           </Container>
         </ThemeProvider>
       );

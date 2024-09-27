@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Container } from '@mui/material';
+import { TextField, Button, Box, Typography, Container, Grid, Paper } from '@mui/material';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -35,28 +35,34 @@ const ForgotPassword = () => {
 
     return (
         <Container component="main" maxWidth="xs">
-            <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography component="h1" variant="h5">
-                    Recuperar Contraseña
-                </Typography>
-                <Box component="form" onSubmit={handleForgotPassword} sx={{ mt: 3 }}>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Correo Electrónico"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        autoFocus
-                    />
-                    {error && <Typography color="error" align="center">{error}</Typography>}
-                    {message && <Typography color="success" align="center">{message}</Typography>}
-                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                        Enviar Correo de Recuperación
-                    </Button>
-                </Box>
-            </Box>
+            <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '80vh' }}>
+                <Grid item xs={8} sm={10} md={20}>
+                    <Paper elevation={3} style={{ padding: '30px', backgroundColor: 'white' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <Typography component="h1" variant="h5">
+                                Recuperar Contraseña
+                            </Typography>
+                            <Box component="form" onSubmit={handleForgotPassword} sx={{ mt: 3 }}>
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    label="Correo Electrónico"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    autoFocus
+                                />
+                                {error && <Typography color="error" align="center">{error}</Typography>}
+                                {message && <Typography color="success" align="center">{message}</Typography>}
+                                <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+                                    Enviar Correo de Recuperación
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
         </Container>
     );
 };

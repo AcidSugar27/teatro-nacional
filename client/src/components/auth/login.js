@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Avatar, Button, CssBaseline, TextField, Box, Grid, Typography, Container } from '@mui/material';
+import { Avatar, Link, Button, CssBaseline, TextField, Box, Grid, Typography, Container } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +59,7 @@ const Login = () => {
                 <LockOutlinedIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Login
+              Iniciar sesión
               </Typography>
               <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 3 }}>
                 <TextField
@@ -67,7 +67,7 @@ const Login = () => {
                   required
                   fullWidth
                   id="email"
-                  label="Email Address"
+                  label="Direccion de correo"
                   name="email"
                   autoComplete="email"
                   value={email}
@@ -97,18 +97,17 @@ const Login = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                  sx={{ mt: 2, mb: 2 }}
                 >
                   Loguearse
                 </Button>
-                <Grid container justifyContent="flex-end">
-                            
-                            <Grid item>
-                                <Button variant="text" onClick={() => navigate('/register')}>
-                                    ¿Ya tienes una cuenta? Inicia sesión
-                                </Button>
-                            </Grid>
-                        </Grid>
+                <Grid container justifyContent="flex-end">       
+                  <Grid item>
+                  <Link href="/register" variant="body2">
+                      ¿No tienes una cuenta? Registrate
+                  </Link>
+                  </Grid>
+                </Grid>
               </Box>
             </Box>
           </Container>
