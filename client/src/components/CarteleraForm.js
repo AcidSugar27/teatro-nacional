@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Button, CardContent, CircularProgress, Grid, TextField } from '@mui/material';
-import { Card, Typography } from '@mui/material';
+import { Button, CardContent, CircularProgress, Grid, TextField, IconButton } from '@mui/material';
+import { Card, Typography, MenuItem } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function CarteleraForm() {
   const [cartelera, setCartelera] = useState({
     nombre: '',
     categoria: '',
-    fecha_inicio: dayjs(),  // Initial date
-    fecha_final: dayjs(),     // Initial date
+    fecha_inicio: new Date(),
+    fecha_final: new Date(),
     imagen_url: '',
     sala_id: ''
   });
@@ -33,13 +33,6 @@ export default function CarteleraForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    // Verifica si las fechas son válidas antes de convertir
-    if (!cartelera.fecha_inicio.isValid() || !cartelera.fecha_final.isValid()) {
-      console.error("Fechas inválidas:", cartelera.fecha_inicio, cartelera.fecha_final);
-      setLoading(false);
-      return;
-    }
 
     const payload = {
       ...cartelera,
@@ -84,8 +77,8 @@ export default function CarteleraForm() {
     setCartelera({
       nombre: data.nombre,
       categoria: data.categoria,
-      fecha_inicio: dayjs(data.fecha_inicio),  // Load start date with Dayjs
-      fecha_final: dayjs(data.fecha_final),        // Load end date with Dayjs
+      fecha_inicio: new Date(data.fecha_inicio),
+      fecha_final: new Date(data.fecha_final),
       imagen_url: data.imagen_url,
       sala_id: data.sala_id,
     });
@@ -100,41 +93,59 @@ export default function CarteleraForm() {
   }, [params.id]);
 
   return (
-    <Grid container direction='column' alignItems='center' justifyContent='center'>
+    <Grid container direction='column' alignItems='center' justifyContent='center' style={{ minHeight: '100vh' }}>
       <Grid item xs={12} sm={8} md={6}>
-        <Card sx={{ mt: 5 }} style={{ backgroundColor: '#f5f5f5', padding: '1rem' }}>
-          <Typography variant='h5' textAlign='center' color='blue'>
-            {editing ? 'Editar evento' : 'Crear evento'}
+        <Card sx={{ mt: -10, position: 'relative' }} style={{ backgroundColor: '#f5f5f5', padding: '1rem' }}>
+          
+          <IconButton 
+            aria-label="cancel" 
+            sx={{ position: 'absolute', top: 8, left: 8, color: 'red' }} 
+            onClick={() => navigate('/')}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          <Typography variant='h5' textAlign='center' color='black'>
+            {editing ? 'Editar Cartelera' : 'Agregar Cartelera'}
           </Typography>
           <CardContent>
             <form onSubmit={handleSubmit}>
               <TextField
                 variant='filled'
                 value={cartelera.nombre}
-                label='Nombre del evento'
-                sx={{ display: 'block', margin: '.5rem 0' }}
+                label='Nombre de la cartelera'
+                sx={{ display: 'block', margin: '1rem 0' }}
                 name='nombre'
                 onChange={handleChange}
                 inputProps={{ style: { color: 'black' } }}
+                fullWidth
               />
+              
               <TextField
+                select
                 variant='filled'
                 value={cartelera.categoria}
                 label='Categoría'
-                sx={{ display: 'block', margin: '.5rem 0' }}
+                sx={{ display: 'block', margin: '1rem 0' }}
                 name='categoria'
                 onChange={handleChange}
                 inputProps={{ style: { color: 'black' } }}
-              />
-              {/* DateTimePicker for start and end date */}
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                fullWidth
+              >
+                <MenuItem value="Teatro">Teatro</MenuItem>
+                <MenuItem value="Danza">Danza</MenuItem>
+                <MenuItem value="Opera">Opera</MenuItem>
+                <MenuItem value="Obra">Obra</MenuItem>
+              </TextField>
+
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <DateTimePicker
                       label="Fecha de inicio"
                       value={cartelera.fecha_inicio}
                       onChange={(newValue) => handleDateChange('fecha_inicio', newValue)}
-                      renderInput={(params) => <TextField {...params} sx={{ display: 'block', margin: '.5rem 0' }} />}
+                      renderInput={(params) => <TextField {...params} sx={{ display: 'flex', margin: '.5rem 0' }} />}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -147,15 +158,18 @@ export default function CarteleraForm() {
                   </Grid>
                 </Grid>
               </LocalizationProvider>
+
               <TextField
                 variant='filled'
                 value={cartelera.imagen_url}
                 label='URL de la imagen'
-                sx={{ display: 'block', margin: '.5rem 0' }}
+                sx={{ display: 'block', margin: '1rem 0' }}
                 name='imagen_url'
                 onChange={handleChange}
                 inputProps={{ style: { color: 'black' } }}
+                fullWidth
               />
+              
               <TextField
                 select
                 label='Sala'
@@ -165,7 +179,8 @@ export default function CarteleraForm() {
                 SelectProps={{
                   native: true,
                 }}
-                sx={{ display: 'block', margin: '.5rem 0' }}
+                sx={{ display: 'block', margin: '1rem 0' }}
+                fullWidth
               >
                 <option value=''></option>
                 {salas.map((sala) => (
@@ -174,6 +189,7 @@ export default function CarteleraForm() {
                   </option>
                 ))}
               </TextField>
+
               <Button
                 variant='contained'
                 color='primary'
@@ -186,6 +202,8 @@ export default function CarteleraForm() {
                   !cartelera.imagen_url ||
                   !cartelera.sala_id
                 }
+                fullWidth
+                sx={{ mt: 2 }}
               >
                 {loading ? <CircularProgress color='inherit' size={24} /> : editing ? 'Actualizar evento' : 'Crear evento'}
               </Button>
