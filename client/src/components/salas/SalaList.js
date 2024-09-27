@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Card, CardContent, Button, Grid, CardMedia } from '@mui/material';
+import { Typography, Card, CardContent, Button, Grid, CardMedia, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function SalaList() {
     const [salas, setSalas] = useState([]);
