@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, CardContent, CircularProgress, Grid, TextField, IconButton } from '@mui/material';
 import { Card, Typography, MenuItem } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,8 +12,9 @@ export default function CarteleraForm() {
   const [cartelera, setCartelera] = useState({
     nombre: '',
     categoria: '',
-    fecha_inicio: new Date(),
-    fecha_final: new Date(),
+    fecha: new Date(), // Guarda el día, mes, y año
+    fecha_inicio: new Date(), // Guarda solo la hora de inicio
+    fecha_final: new Date(), // Guarda solo la hora de finalización
     imagen_url: '',
     sala_id: ''
   });
@@ -34,10 +36,12 @@ export default function CarteleraForm() {
     e.preventDefault();
     setLoading(true);
 
+    // Convertimos las fechas y horas al formato deseado
     const payload = {
       ...cartelera,
-      fecha_inicio: cartelera.fecha_inicio.toISOString(),
-      fecha_final: cartelera.fecha_final.toISOString()
+      fecha: cartelera.fecha.toISOString().split('T')[0], // Solo guarda la fecha (año-mes-día)
+      fecha_inicio: cartelera.fecha_inicio.toTimeString().split(' ')[0], // Solo guarda la hora de inicio (HH:mm:ss)
+      fecha_final: cartelera.fecha_final.toTimeString().split(' ')[0] // Solo guarda la hora final (HH:mm:ss)
     };
 
     try {
@@ -77,8 +81,9 @@ export default function CarteleraForm() {
     setCartelera({
       nombre: data.nombre,
       categoria: data.categoria,
-      fecha_inicio: new Date(data.fecha_inicio),
-      fecha_final: new Date(data.fecha_final),
+      fecha: new Date(data.fecha), // Cargamos la fecha
+      fecha_inicio: new Date(`1970-01-01T${data.fecha_inicio}`), // Cargamos solo la hora de inicio
+      fecha_final: new Date(`1970-01-01T${data.fecha_final}`), // Cargamos solo la hora final
       imagen_url: data.imagen_url,
       sala_id: data.sala_id,
     });
@@ -140,17 +145,30 @@ export default function CarteleraForm() {
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <DateTimePicker
-                      label="Fecha de inicio"
-                      value={cartelera.fecha_inicio}
-                      onChange={(newValue) => handleDateChange('fecha_inicio', newValue)}
-                      renderInput={(params) => <TextField {...params} sx={{ display: 'flex', margin: '.5rem 0' }} />}
+                  {/* Campo de fecha */}
+                  <Grid item xs={12}>
+                    <DatePicker
+                      label="Fecha"
+                      value={cartelera.fecha}
+                      onChange={(newValue) => handleDateChange('fecha', newValue)}
+                      renderInput={(params) => <TextField {...params} sx={{ display: 'block', margin: '.5rem 0' }} />}
                     />
                   </Grid>
+
+                  {/* Campo de hora de inicio */}
                   <Grid item xs={12} sm={6}>
-                    <DateTimePicker
-                      label="Fecha final"
+                    <TimePicker
+                      label="Hora de inicio"
+                      value={cartelera.fecha_inicio}
+                      onChange={(newValue) => handleDateChange('fecha_inicio', newValue)}
+                      renderInput={(params) => <TextField {...params} sx={{ display: 'block', margin: '.5rem 0' }} />}
+                    />
+                  </Grid>
+
+                  {/* Campo de hora final */}
+                  <Grid item xs={12} sm={6}>
+                    <TimePicker
+                      label="Hora final"
                       value={cartelera.fecha_final}
                       onChange={(newValue) => handleDateChange('fecha_final', newValue)}
                       renderInput={(params) => <TextField {...params} sx={{ display: 'block', margin: '.5rem 0' }} />}
@@ -197,6 +215,7 @@ export default function CarteleraForm() {
                 disabled={
                   !cartelera.nombre ||
                   !cartelera.categoria ||
+                  !cartelera.fecha ||
                   !cartelera.fecha_inicio ||
                   !cartelera.fecha_final ||
                   !cartelera.imagen_url ||

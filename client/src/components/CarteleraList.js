@@ -6,7 +6,6 @@ export default function CarteleraList() {
   const [carteleras, setCarteleras] = useState([]);
   const navigate = useNavigate();
 
-  
   const loadCarteleras = async () => {
     try {
       const response = await fetch('http://localhost:4000/cartelera');
@@ -17,7 +16,6 @@ export default function CarteleraList() {
     }
   };
 
-  // Delete a specific cartelera
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`http://localhost:4000/cartelera/${id}`, {
@@ -34,16 +32,21 @@ export default function CarteleraList() {
     }
   };
 
+  const formatTimeTo12Hour = (time24) => {
+    const [hours, minutes, seconds] = time24.split(':');
+    const period = +hours >= 12 ? 'PM' : 'AM';
+    const hours12 = +hours % 12 || 12; 
+    return `${hours12}:${minutes}:${seconds} ${period}`;
+  };
+
   useEffect(() => {
     loadCarteleras();
   }, []);
 
-  // Filtrar eventos del día actual
-  const today = new Date().toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+  const today = new Date().toISOString().split('T')[0];
   const todayEvents = carteleras.filter(event => event.fecha_inicio.split('T')[0] === today);
-
-  // Filtrar próximos eventos (futuros)
   const upcomingEvents = carteleras.filter(event => event.fecha_inicio.split('T')[0] > today);
+  const pastEvents = carteleras.filter(event => event.fecha_inicio.split('T')[0] < today);
 
   const renderEventCard = (event) => (
     <Card style={{ marginBottom: '1rem', backgroundColor: '#f5f5f5' }}>
@@ -67,12 +70,14 @@ export default function CarteleraList() {
           Categoría: {event.categoria}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          {new Date(event.fecha_inicio).toLocaleDateString('es-ES')}
+          Fecha: {new Date(event.fecha).toLocaleDateString('es-ES')}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          {new Date(event.fecha_inicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true })} - 
-          {new Date(event.fecha_final).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true })}
+         Fecha de Inicio: {formatTimeTo12Hour(event.fecha_inicio)}
+         -
+         Fecha Final: {formatTimeTo12Hour(event.fecha_final)}
         </Typography>
+
         <Typography variant="body2" color="textSecondary">
           Sala: {event.sala_nombre}
         </Typography>
@@ -97,43 +102,65 @@ export default function CarteleraList() {
   );
 
   return (
-    <Grid container spacing={4} padding={2}>
-      
-      <Grid item xs={12} md={6}>
+    <Grid container spacing={2} padding={3}>
+      <Grid item xs={12}>
+        <Typography variant="h5" gutterBottom>
+          Eventos Anteriores
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2}>
+          {pastEvents.length > 0 ? (
+            pastEvents.map((event) => (
+              <Grid item xs={12} sm={6} md={4} key={event.id}>
+                {renderEventCard(event)}
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No hay eventos anteriores.
+            </Typography>
+          )}
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12}>
         <Typography variant="h5" gutterBottom>
           Eventos de Hoy
         </Typography>
         <Divider sx={{ mb: 2 }} />
-        {todayEvents.length > 0 ? (
-          todayEvents.map((event) => (
-            <div key={event.id}>
-              {renderEventCard(event)}
-            </div>
-          ))
-        ) : (
-          <Typography variant="body1" color="textSecondary">
-            No hay eventos programados para hoy.
-          </Typography>
-        )}
+        <Grid container spacing={2}>
+          {todayEvents.length > 0 ? (
+            todayEvents.map((event) => (
+              <Grid item xs={12} sm={6} md={4} key={event.id}>
+                {renderEventCard(event)}
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No hay eventos programados para hoy.
+            </Typography>
+          )}
+        </Grid>
       </Grid>
 
-      
-      <Grid item xs={12} md={6}>
+      <Grid item xs={12}>
         <Typography variant="h5" gutterBottom>
           Próximos Eventos
         </Typography>
         <Divider sx={{ mb: 2 }} />
-        {upcomingEvents.length > 0 ? (
-          upcomingEvents.map((event) => (
-            <div key={event.id}>
-              {renderEventCard(event)}
-            </div>
-          ))
-        ) : (
-          <Typography variant="body1" color="textSecondary">
-            No hay próximos eventos.
-          </Typography>
-        )}
+        <Grid container spacing={2}>
+          {upcomingEvents.length > 0 ? (
+            upcomingEvents.map((event) => (
+              <Grid item xs={12} sm={6} md={4} key={event.id}>
+                {renderEventCard(event)}
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No hay próximos eventos.
+            </Typography>
+          )}
+        </Grid>
       </Grid>
     </Grid>
   );
