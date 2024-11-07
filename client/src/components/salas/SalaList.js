@@ -1,16 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Card, CardContent, Button, Grid, CardMedia, IconButton } from '@mui/material';
+import { Typography, Card, CardContent, Button, Grid, CardMedia } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import CloseIcon from '@mui/icons-material/Close';
 
 export default function SalaList() {
     const [salas, setSalas] = useState([]);
+    const [userRole, setUserRole] = useState(null); // Para almacenar el rol del usuario
     const navigate = useNavigate();
 
     const loadSalas = async () => {
         const response = await fetch('http://localhost:4000/sala');
         const data = await response.json();
         setSalas(data);
+    };
+
+    // Función para obtener el rol del usuario como en el Navbar
+    const fetchUserRole = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch('http://localhost:4000/user', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                setUserRole(data.rol); // Asignar el rol del usuario
+            })
+            .catch(error => {
+                console.error('Error fetching user role:', error);
+            });
+        }
     };
 
     const handleDelete = async (id) => {
@@ -31,6 +51,7 @@ export default function SalaList() {
 
     useEffect(() => {
         loadSalas();
+        fetchUserRole(); // Llamar a la función para obtener el rol del usuario
     }, []);
 
     return (
@@ -41,7 +62,7 @@ export default function SalaList() {
                         <CardMedia
                             component="img"
                             alt={sala.nombre}
-                            height="140"
+                            height="250"
                             image={sala.imagen_url}
                             title={sala.nombre}
                             sx={{
@@ -51,25 +72,28 @@ export default function SalaList() {
                         <CardContent style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <div>
                                 <Typography variant="h5">{sala.nombre}</Typography>
-                                <Typography variant="h5">{sala.capacidad}</Typography>
+                                <Typography variant="h5">Capacidad:{sala.capacidad}</Typography>
                             </div>
-                            <div>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => navigate(`/sala/${sala.id}/edit`)}
-                                >
-                                    Editar
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={() => handleDelete(sala.id)}
-                                    style={{ marginLeft: '.5rem' }}
-                                >
-                                    Eliminar
-                                </Button>
-                            </div>
+                            {userRole === 'admin' && ( // Mostrar botones solo si el usuario es admin
+                                <div>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => navigate(`/sala/${sala.id}/edit`)}
+                                        style={{ marginLeft: '1.5rem',marginBottom:'0.5rem' }}
+                                    >
+                                        Editar
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={() => handleDelete(sala.id)}
+                                        style={{ marginLeft: '1.5rem' }}
+                                    >
+                                        Eliminar
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </Grid>

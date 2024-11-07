@@ -11,6 +11,8 @@ const salaroutes = require("./routes/sala.rutas.js")
 app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
+app.use('/uploads', express.static('uploads'));
+
 
 app.use(carteleraroutes, loginroutes, salaroutes)
 

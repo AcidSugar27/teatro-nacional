@@ -39,14 +39,21 @@ const getAllCartelera = async (req, res, next) => {
 
 // Crear un nuevo evento en la cartelera
 const createCartelera = async (req, res, next) => {
-    const { nombre, categoria, fecha, fecha_inicio, fecha_final, imagen_url, sala_id } = req.body;
+    const { nombre, categoria, descripcion, fecha, fecha_inicio, fecha_final, sala_id } = req.body;
     console.log("Datos recibidos:", req.body);
-    
+
+    // Validación básica
+    if (!nombre || !categoria || !descripcion || !fecha || !sala_id) {
+        return res.status(400).json({ message: "Faltan campos requeridos." });
+    }
+
     try {
+        const imagen_url = req.file ? `/uploads/${req.file.filename}` : null;
+
         const result = await pool.query(
-            `INSERT INTO cartelera (nombre, categoria, fecha, fecha_inicio, fecha_final, imagen_url, sala_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [nombre, categoria, fecha, fecha_inicio, fecha_final, imagen_url, sala_id]
+            `INSERT INTO cartelera (nombre, categoria, descripcion, fecha, fecha_inicio, fecha_final, imagen_url, sala_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [nombre, categoria, descripcion, fecha, fecha_inicio, fecha_final, imagen_url, sala_id]
         );
 
         res.json(result.rows[0]);
@@ -76,16 +83,21 @@ const deleteCartelera = async (req, res, next) => {
 
 // Actualizar un evento existente en la cartelera
 const updateCartelera = async (req, res, next) => {
-    
     try {
+        console.log("Body recibido:", req.body);
+        console.log("Archivo recibido:", req.file);
+
         const { id } = req.params;
-        const { nombre, categoria, fecha, fecha_inicio, fecha_final, imagen_url, sala_id } = req.body;
+        const { nombre, categoria, descripcion, fecha, fecha_inicio, fecha_final, sala_id, imagen_url } = req.body;
+
+        // Si hay un archivo nuevo, usa su URL; de lo contrario, mantiene la URL existente de la imagen
+        const newImagenUrl = req.file ? `/uploads/${req.file.filename}` : imagen_url;
 
         const result = await pool.query(
             `UPDATE cartelera 
-            SET nombre = $1, categoria = $2, fecha = $3, fecha_inicio = $4, fecha_final = $5, imagen_url = $6, sala_id = $7 
-            WHERE id = $8 RETURNING *`,
-            [nombre, categoria, fecha, fecha_inicio, fecha_final, imagen_url, sala_id, id]
+            SET nombre = $1, categoria = $2, descripcion = $3, fecha = $4, fecha_inicio = $5, fecha_final = $6, imagen_url = $7, sala_id = $8 
+            WHERE id = $9 RETURNING *`,
+            [nombre, categoria, descripcion, fecha, fecha_inicio, fecha_final, newImagenUrl, sala_id, id]
         );
 
         if (result.rowCount === 0) {
@@ -99,6 +111,7 @@ const updateCartelera = async (req, res, next) => {
         next(error);
     }
 };
+
 
 module.exports = {
     getCartelera,
