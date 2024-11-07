@@ -22,6 +22,9 @@ export default function CarteleraForm() {
   const [salas, setSalas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [file, setFile] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  
 
   const navigate = useNavigate();
   const params = useParams();
@@ -32,17 +35,44 @@ export default function CarteleraForm() {
     setSalas(data);
   };
 
+  const fetchUserRole = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:4000/user', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        setUserRole(data.rol); // Asignar el rol del usuario
+      })
+      .catch(error => {
+        console.error('Error fetching user role:', error);
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Convertimos las fechas y horas al formato deseado
-    const payload = {
-      ...cartelera,
-      fecha: cartelera.fecha.toISOString().split('T')[0], // Solo guarda la fecha (año-mes-día)
-      fecha_inicio: cartelera.fecha_inicio.toTimeString().split(' ')[0], // Solo guarda la hora de inicio (HH:mm:ss)
-      fecha_final: cartelera.fecha_final.toTimeString().split(' ')[0] // Solo guarda la hora final (HH:mm:ss)
-    };
+    const payload = new FormData();
+    payload.append('nombre', cartelera.nombre);
+    payload.append('categoria', cartelera.categoria);
+    payload.append('descripcion', cartelera.descripcion);
+    payload.append('fecha', cartelera.fecha.toISOString().split('T')[0]);
+    payload.append('fecha_inicio', cartelera.fecha_inicio.toTimeString().split(' ')[0]);
+    payload.append('fecha_final', cartelera.fecha_final.toTimeString().split(' ')[0]);
+    payload.append('sala_id', cartelera.sala_id);
+
+    if (file) {
+      payload.append('imagen_url', file);
+    } else {
+      // Si no hay archivo, aseguramos que se envíe la imagen actual
+      payload.append('imagen_url', cartelera.imagen_url);
+    }
 
     try {
       const url = editing
@@ -51,8 +81,7 @@ export default function CarteleraForm() {
 
       const response = await fetch(url, {
         method: editing ? 'PUT' : 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        body: payload,
       });
 
       if (!response.ok) {
@@ -66,6 +95,7 @@ export default function CarteleraForm() {
       setLoading(false);
     }
   };
+  
 
   const handleChange = (e) => {
     setCartelera({ ...cartelera, [e.target.name]: e.target.value });
@@ -75,15 +105,23 @@ export default function CarteleraForm() {
     setCartelera({ ...cartelera, [name]: newValue });
   };
 
+  useEffect(() => {
+    if (userRole && userRole !== 'admin') {
+      alert('No tienes permiso para acceder a esta página');
+      navigate('/');
+    }
+  }, [userRole, navigate]);
+
   const loadCartelera = async (id) => {
     const res = await fetch(`http://localhost:4000/cartelera/${id}`);
     const data = await res.json();
     setCartelera({
       nombre: data.nombre,
       categoria: data.categoria,
+      descripcion: data.descripcion,
       fecha: new Date(data.fecha), // Cargamos la fecha
-      fecha_inicio: new Date(`1970-01-01T${data.fecha_inicio}`), // Cargamos solo la hora de inicio
-      fecha_final: new Date(`1970-01-01T${data.fecha_final}`), // Cargamos solo la hora final
+      fecha_inicio: new Date(`2024-01-01T${data.fecha_inicio}`), // Cargamos solo la hora de inicio
+      fecha_final: new Date(`2024-01-01T${data.fecha_final}`), // Cargamos solo la hora final
       imagen_url: data.imagen_url,
       sala_id: data.sala_id,
     });
@@ -92,6 +130,7 @@ export default function CarteleraForm() {
 
   useEffect(() => {
     fetchSalas();
+    fetchUserRole();
     if (params.id) {
       loadCartelera(params.id);
     }
@@ -125,6 +164,19 @@ export default function CarteleraForm() {
                 inputProps={{ style: { color: 'black' } }}
                 fullWidth
               />
+
+              <TextField
+                variant='filled'
+                multiline
+                rows={4}
+                value={cartelera.descripcion}
+                label='Descripción'
+                sx={{ display: 'block', margin: '1rem 0' }}
+                name='descripcion'
+                onChange={handleChange}
+                inputProps={{ style: { color: 'black' } }}
+                fullWidth
+              /> 
               
               <TextField
                 select
@@ -177,16 +229,14 @@ export default function CarteleraForm() {
                 </Grid>
               </LocalizationProvider>
 
-              <TextField
-                variant='filled'
-                value={cartelera.imagen_url}
-                label='URL de la imagen'
-                sx={{ display: 'block', margin: '1rem 0' }}
-                name='imagen_url'
-                onChange={handleChange}
-                inputProps={{ style: { color: 'black' } }}
-                fullWidth
+              <input
+                accept="image/*"
+                type="file"
+                onChange={(e) => setFile(e.target.files[0])}
+                style={{ display: 'block', margin: '1rem 0' }}
               />
+              
+              
               
               <TextField
                 select
@@ -218,7 +268,6 @@ export default function CarteleraForm() {
                   !cartelera.fecha ||
                   !cartelera.fecha_inicio ||
                   !cartelera.fecha_final ||
-                  !cartelera.imagen_url ||
                   !cartelera.sala_id
                 }
                 fullWidth

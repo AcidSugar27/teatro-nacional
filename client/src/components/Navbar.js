@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 export default function Navbar() {
     const navigate = useNavigate();
     const [nombre, setNombre] = useState(null);
+    const [role, setRole] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
 
     const theme = useTheme();
@@ -25,6 +26,7 @@ export default function Navbar() {
             .then(response => response.json())
             .then(data => {
                 setNombre(data.nombre);
+                setRole(data.rol); 
             })
             .catch(error => {
                 console.error('Error fetching user data:', error);
@@ -47,9 +49,9 @@ export default function Navbar() {
     };
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static" color="transparent">
-                <Container>
+        <Box sx={{ flexGrow: 1}}>
+            <AppBar position="static" sx={{backgroundColor:'black'}}>
+                <Container >
                     <Toolbar>
                         <Typography variant="h6" sx={{ flexGrow: 1 }}>
                             <Link to="/" style={{ textDecoration: 'none', color: '#eee' }}>TEATRO NACIONAL</Link>
@@ -57,47 +59,55 @@ export default function Navbar() {
 
                         {isMobile ? (
                             <>
-                                <IconButton
-                                    edge="start"
-                                    color="inherit"
-                                    aria-label="menu"
-                                    onClick={handleMenuClick}
-                                >
-                                    <MenuIcon />
-                                </IconButton>
-                                <Menu
-                                    anchorEl={anchorEl}
-                                    open={Boolean(anchorEl)}
-                                    onClose={handleMenuClose}
-                                >
-                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/cartelera/new'); }}>Agregar a Cartelera</MenuItem>
-                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/sala/new'); }}>Agregar Sala</MenuItem>
-                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/salas'); }}>Ver Salas</MenuItem>
-                                </Menu>
+                                {role === 'admin' && (
+                                    <>
+                                        <IconButton
+                                            edge="start"
+                                            color="inherit"
+                                            aria-label="menu"
+                                            onClick={handleMenuClick}
+                                        >
+                                            <MenuIcon />
+                                        </IconButton>
+                                        <Menu
+                                            anchorEl={anchorEl}
+                                            open={Boolean(anchorEl)}
+                                            onClose={handleMenuClose}
+                                        >
+                                            <MenuItem onClick={() => { handleMenuClose(); navigate('/cartelera/new'); }}>Agregar a Cartelera</MenuItem>
+                                            <MenuItem onClick={() => { handleMenuClose(); navigate('/sala/new'); }}>Agregar Sala</MenuItem>
+                                            <MenuItem onClick={() => { handleMenuClose(); navigate('/salas'); }}>Ver Salas</MenuItem>
+                                        </Menu>
+                                    </>
+                                )}
                             </>
                         ) : (
-                            <Select
-                                value=""
-                                displayEmpty
-                                style={{ marginRight: '10px' }}
-                                onChange={(e) => navigate(`/${e.target.value}`)}
-                            >
-                                <MenuItem value="" disabled>
-                                    Opciones
-                                </MenuItem>
-                                <MenuItem value="cartelera/new">Agregar a Cartelera</MenuItem>
-                                <MenuItem value="sala/new">Agregar Sala</MenuItem>
-                                <MenuItem value="salas">Ver Salas</MenuItem>
-                            </Select>
+                            <>
+                                {role === 'admin' && (
+                                    <Select
+                                        value=""
+                                        displayEmpty
+                                        style={{ marginRight: '20px', backgroundColor:'white', width: '120px',height: '42px',   }}
+                                        onChange={(e) => navigate(`/${e.target.value}`)}
+                                    >
+                                        <MenuItem value="" disabled sx={{backgroundColor:'black' }}>
+                                            Opciones
+                                        </MenuItem>
+                                        <MenuItem value="cartelera/new">Agregar a Cartelera</MenuItem>
+                                        <MenuItem value="sala/new">Agregar Sala</MenuItem>
+                                        <MenuItem value="salas">Ver Salas</MenuItem>
+                                    </Select>
+                                )}
+                            </>
                         )}
 
                         {nombre ? (
                             <>
-                                <Typography variant="body1" sx={{ marginRight: '8px' }}>
+                                <Typography variant="body1" sx={{ marginRight: '20px' }}>
                                     Bienvenido, {nombre} 
                                 </Typography>
-                                <Button color="inherit" onClick={handleLogout}>
-                                    Logout
+                                <Button color="error" sx={{backgroundColor:'white'}} onClick={handleLogout}>
+                                    Desloguearse
                                 </Button>
                             </>
                         ) : (
@@ -110,7 +120,6 @@ export default function Navbar() {
                                 </Button>
                             </>
                         )}
-
                     </Toolbar>
                 </Container>
             </AppBar>
