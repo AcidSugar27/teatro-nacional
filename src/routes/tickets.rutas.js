@@ -1,32 +1,18 @@
 // routes.js
+const { Router } = require('express');
 
-const express = require('express');
-const ticketsController = require('\controllers\tickets.controller.js');
 
-const router = express.Router();
+const authenticateToken = require('../middleware/auth.middleware'); // Middleware para autenticar usuarios
+const {comprarTickets, confirmarCompra} = require('../controllers/tickets.controller')
 
-// Ruta para obtener tickets disponibles por show ID
-router.get('/shows/:showId/tickets', async (req, res) => {
-  const { showId } = req.params;
-  try {
-    const tickets = await ticketsController.getTicketsByShowId(showId);
-    res.json(tickets);
-  } catch (error) {
-    console.error('Error fetching tickets:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+const router = Router();
+// Ruta para comprar boletos asociados a una cartelera específica
+router.post('/cartelera/:id/comprar',  comprarTickets);
 
-// Ruta para marcar un ticket como vendido
-router.put('/tickets/:ticketId/sell', async (req, res) => {
-  const { ticketId } = req.params;
-  try {
-    await ticketsController.markTicketAsSold(ticketId);
-    res.status(204).end();
-  } catch (error) {
-    console.error('Error marking ticket as sold:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// Ruta para confirmar la compra y actualizar el conteo de boletos vendidos
+router.post('/cartelera/:id/confirmar-compra',  confirmarCompra);
 
 module.exports = router;
+
+
+
