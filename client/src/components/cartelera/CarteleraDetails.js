@@ -9,6 +9,15 @@ export default function CarteleraDetails() {
   const [event, setEvent] = useState(null);
   const navigate = useNavigate();
   
+  const fetchEventDetails = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/cartelera/${id}`);
+      const data = await response.json();
+      setEvent(data);
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+    }
+  };
 
   useEffect(() => {
     fetchEventDetails();
@@ -21,24 +30,17 @@ export default function CarteleraDetails() {
     return `${hours12}:${minutes} ${period}`;
   };
 
-  const fetchEventDetails = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/cartelera/${id}`);
-      const data = await response.json();
-      setEvent(data);
-    } catch (error) {
-      console.error('Error fetching event details:', error);
-    }
-  };
+  
 
-  const handleTicketPurchase = (funcionId) => {
-    // Redirect only if the user is authenticated
-    const isAuthenticated = Boolean(localStorage.getItem('token')); // or use a context
+  const handleTicketPurchase = () => {
+    // Verificar si el usuario está autenticado
+    const isAuthenticated = Boolean(localStorage.getItem('token')); // o usar un contexto
     if (isAuthenticated) {
-      navigate(`/ticket/${funcionId}/buy`);
+      // Redirigir a la ruta de compra de boletos de la cartelera
+      navigate(`/cartelera/${id}/comprar`);
     } else {
       alert("Debe iniciar sesión para comprar boletos");
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login");  // Redirigir al login si no está autenticado
     }
   };
 
@@ -114,7 +116,7 @@ export default function CarteleraDetails() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate(`/ticket/${id}/buy`)} // Redirigir a la pantalla de compra de entradas
+              onClick={handleTicketPurchase} // Redirigir a la pantalla de compra de entradas
             >
               Comprar Boletos
             </Button>
