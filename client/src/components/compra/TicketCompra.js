@@ -132,7 +132,7 @@ export default function TicketCompra() {
           <CardContent>
             <Typography variant="h5">{event.nombre}</Typography>
             <Typography variant="body1">Fecha: {new Date(event.fecha).toLocaleDateString('es-ES')}</Typography>
-            <Typography variant="body2">Asientos disponibles: {event.capacidad_sala - event.boletos_vendidos}</Typography>
+            <Typography variant="body2">Asientos disponibles: {event.capacidad_sala - event.tickets_vendidos}</Typography>
             <Typography variant="body1">Precio por boleto: ${ticketPrice}</Typography>
             <TextField
               label="Cantidad de boletos"
