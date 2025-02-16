@@ -19,7 +19,7 @@ const Registrar = () => {
     const navigate = useNavigate();
 
     const handleRegister = async (event) => {
-      event.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
+      event.preventDefault(); 
       setError('');
   
       if (!nombre || !apellido || !email || !password) {

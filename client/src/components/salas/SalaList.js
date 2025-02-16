@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function SalaList() {
     const [salas, setSalas] = useState([]);
-    const [userRole, setUserRole] = useState(null); // Para almacenar el rol del usuario
+    const [userRole, setUserRole] = useState(null); 
     const navigate = useNavigate();
 
     const loadSalas = async () => {
@@ -13,7 +13,7 @@ export default function SalaList() {
         setSalas(data);
     };
 
-    // Función para obtener el rol del usuario como en el Navbar
+   
     const fetchUserRole = () => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -25,7 +25,7 @@ export default function SalaList() {
             })
             .then(response => response.json())
             .then(data => {
-                setUserRole(data.rol); // Asignar el rol del usuario
+                setUserRole(data.rol); 
             })
             .catch(error => {
                 console.error('Error fetching user role:', error);
@@ -51,7 +51,7 @@ export default function SalaList() {
 
     useEffect(() => {
         loadSalas();
-        fetchUserRole(); // Llamar a la función para obtener el rol del usuario
+        fetchUserRole(); 
     }, []);
 
     return (
@@ -74,7 +74,7 @@ export default function SalaList() {
                                 <Typography variant="h5">{sala.nombre}</Typography>
                                 <Typography variant="h5">Capacidad:{sala.capacidad}</Typography>
                             </div>
-                            {userRole === 'admin' && ( // Mostrar botones solo si el usuario es admin
+                            {userRole === 'admin' && ( 
                                 <div>
                                     <Button
                                         variant="contained"

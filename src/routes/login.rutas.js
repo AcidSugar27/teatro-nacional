@@ -12,15 +12,6 @@ router.post('/forgot-password', forgotPassword)
 router.post('/reset-password', resetPassword)
 router.get('/user', getUserData);
 
-// Rutas protegidas
-router.post('/admin/create-show', authenticateToken, checkRole(['admin']), async (req, res) => {
-    // Lógica para crear un show
-    res.json({ message: 'Show created' });
-});
 
-router.post('/user/purchase-ticket', authenticateToken, checkRole(['user', 'admin']), async (req, res) => {
-    // Lógica para que los usuarios compren tickets
-    res.json({ message: 'Ticket purchased' });
-});
 
 module.exports = router;

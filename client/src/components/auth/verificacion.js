@@ -1,4 +1,4 @@
-// src/pages/VerifyEmail.js
+
 
 import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -15,15 +15,15 @@ const VerifyEmail = () => {
                 .then(data => {
                     if (data.message) {
                         console.log('Verification success:', data.message);
-                        navigate('/login'); // Redirige al login después de la verificación exitosa
+                        navigate('/login'); 
                     } else if (data.error) {
                         console.error('Verification failed:', data.error);
-                        // Maneja el error (e.g., mostrar un mensaje)
+                        
                     }
                 })
                 .catch(error => {
                     console.error('Verification failed:', error);
-                    // Maneja el error
+                    
                 });
         }
     }, [token, navigate]);

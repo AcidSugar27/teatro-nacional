@@ -10,18 +10,18 @@ const { authenticateToken, checkRole } = require('../middleware/auth.middleware'
 const multer = require('multer');
 const path = require('path');
 
-// Configuración de Multer para almacenar las imágenes en la carpeta 'uploads'
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');  // Carpeta donde se guardarán las imágenes
+    cb(null, 'uploads/');  
   },
   filename: (req, file, cb) => {
-    // Crear un nombre único para cada archivo basado en la fecha y extensión original
+   
     cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 
-// Inicializar Multer con la configuración de almacenamiento
+
 const upload = multer({ storage: storage });
 
 const router = Router();

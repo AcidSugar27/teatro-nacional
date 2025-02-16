@@ -1,5 +1,5 @@
 const pool = require('../db');
-
+//Obtener una sala en especifico
 const getSala = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -15,7 +15,7 @@ const getSala = async (req, res, next) => {
         next(error);
     }
 };
-
+//Obtener todas las salas
 const getAllSala = async (req, res, next) => {
     try {
         const result = await pool.query('SELECT * FROM sala');
@@ -25,7 +25,7 @@ const getAllSala = async (req, res, next) => {
         next(error);
     }
 };
-
+//Crear sala
 const createSala = async (req, res, next) => {
     const { nombre, imagen_url, capacidad } = req.body;
     try {
@@ -39,7 +39,7 @@ const createSala = async (req, res, next) => {
         next(error);
     }
 };
-
+//Eliminar sala
 const deleteSala = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -56,7 +56,7 @@ const deleteSala = async (req, res, next) => {
         next(error);
     }
 };
-
+//Actualizar sala
 const updateSala = async (req, res, next) => {
     try {
         const { id } = req.params;

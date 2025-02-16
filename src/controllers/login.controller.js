@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
         pass: 'epnd ctfg euil nnpu'
     }
 });
-
+//ENVIAR LA VERIFICACION DEL CORREO
 const sendVerificationEmail = (user, token) => {
     const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
     const mailOptions = {
@@ -31,7 +31,7 @@ const sendVerificationEmail = (user, token) => {
         }
     });
 };
-
+//registrar el usuario con el nombre, apellido, contraseña, email y rol
 const registrar = async (req, res) => {
     const { nombre, apellido, password, email, rol } = req.body;
     try {
@@ -63,7 +63,7 @@ const registrar = async (req, res) => {
         res.status(500).json({ error: 'Error del servidor' });
     }
 };
-
+//iniciar sesion con el email y la contraseña
 const loguear = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -93,6 +93,7 @@ const loguear = async (req, res) => {
     }
 };
 
+//verificar el correo del usuario para poder iniciar sesion
 const verificarEmail = async (req, res) => {
     const { token } = req.query;
 
@@ -101,14 +102,14 @@ const verificarEmail = async (req, res) => {
     }
 
     try {
-        // Actualizar el estado del email y limpiar el token si el email no ha sido verificado aún
+        
         const result = await pool.query(
             'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1 AND email_verified = FALSE RETURNING *',
             [token]
         );
 
         if (result.rows.length === 0) {
-            // Verifica si el token es inválido o si el email ya ha sido verificado
+            
             const checkToken = await pool.query(
                 'SELECT * FROM users WHERE verification_token = $1',
                 [token]
@@ -130,19 +131,19 @@ const verificarEmail = async (req, res) => {
 
 const getUserData = async (req, res) => {
     try {
-        // Obtener el ID del usuario desde el token de autenticación
+        
         const token = req.headers.authorization.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
 
-        // Consultar la base de datos para obtener los datos del usuario
+       
         const user = await pool.query('SELECT nombre, apellido, email, rol FROM users WHERE id = $1', [userId]);
         
         if (user.rows.length === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        res.json(user.rows[0]);  // Devolver los datos del usuario
+        res.json(user.rows[0]);  
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: 'Error del servidor' });
@@ -157,7 +158,7 @@ const forgotPassword = async (req, res) => {
             return res.status(404).json({ error: 'No se encontró una cuenta con ese email' });
         }
 
-        const user = userResult.rows[0]; // Obtener el usuario de la base de datos
+        const user = userResult.rows[0]; 
         const resetToken = crypto.randomBytes(32).toString('hex');
 
         await pool.query(
@@ -191,32 +192,32 @@ const forgotPassword = async (req, res) => {
 
 
 const resetPassword = async (req, res) => {
-    const { token } = req.query; // El token de restablecimiento viene como query param
-    const { newPassword } = req.body; // La nueva contraseña viene en el cuerpo de la solicitud
+    const { token } = req.query; 
+    const { newPassword } = req.body;
 
     try {
-        // Buscar el usuario que tiene el token
+       
         const userResult = await pool.query(
             'SELECT * FROM users WHERE reset_password_token = $1',
             [token]
         );
 
-        // Si no se encuentra el usuario, devolvemos un error
+        
         if (userResult.rows.length === 0) {
             return res.status(400).json({ error: 'Token inválido' });
         }
 
-        // Generar el hash de la nueva contraseña
+        
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // Actualizar la contraseña y limpiar el token
+        
         await pool.query(
             'UPDATE users SET password = $1, reset_password_token = NULL WHERE id = $2',
             [hashedPassword, userResult.rows[0].id]
         );
 
-        // Responder con un mensaje de éxito
+        
         res.json({ message: 'Contraseña restablecida exitosamente' });
     } catch (error) {
         console.error(error.message);

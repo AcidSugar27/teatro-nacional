@@ -12,11 +12,12 @@ export default function CarteleraForm() {
   const [cartelera, setCartelera] = useState({
     nombre: '',
     categoria: '',
-    fecha: new Date(), // Guarda el día, mes, y año
-    fecha_inicio: new Date(), // Guarda solo la hora de inicio
-    fecha_final: new Date(), // Guarda solo la hora de finalización
+    fecha: new Date(),
+    fecha_inicio: new Date(), 
+    fecha_final: new Date(), 
     imagen_url: '',
-    sala_id: ''
+    sala_id: '',
+    precio_ticket: ''
   });
 
   const [salas, setSalas] = useState([]);
@@ -46,7 +47,7 @@ export default function CarteleraForm() {
       })
       .then(response => response.json())
       .then(data => {
-        setUserRole(data.rol); // Asignar el rol del usuario
+        setUserRole(data.rol); 
       })
       .catch(error => {
         console.error('Error fetching user role:', error);
@@ -66,11 +67,12 @@ export default function CarteleraForm() {
     payload.append('fecha_inicio', cartelera.fecha_inicio.toTimeString().split(' ')[0]);
     payload.append('fecha_final', cartelera.fecha_final.toTimeString().split(' ')[0]);
     payload.append('sala_id', cartelera.sala_id);
+    payload.append('precio_ticket', cartelera.precio_ticket);
 
     if (file) {
       payload.append('imagen_url', file);
     } else {
-      // Si no hay archivo, aseguramos que se envíe la imagen actual
+     
       payload.append('imagen_url', cartelera.imagen_url);
     }
 
@@ -119,11 +121,12 @@ export default function CarteleraForm() {
       nombre: data.nombre,
       categoria: data.categoria,
       descripcion: data.descripcion,
-      fecha: new Date(data.fecha), // Cargamos la fecha
-      fecha_inicio: new Date(`2024-01-01T${data.fecha_inicio}`), // Cargamos solo la hora de inicio
-      fecha_final: new Date(`2024-01-01T${data.fecha_final}`), // Cargamos solo la hora final
+      fecha: new Date(data.fecha), 
+      fecha_inicio: new Date(`2024-01-01T${data.fecha_inicio}`), 
+      fecha_final: new Date(`2024-01-01T${data.fecha_final}`), 
       imagen_url: data.imagen_url,
       sala_id: data.sala_id,
+      precio_ticket: data.precio_ticket
     });
     setEditing(true);
   };
@@ -197,7 +200,7 @@ export default function CarteleraForm() {
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={2}>
-                  {/* Campo de fecha */}
+                 
                   <Grid item xs={12}>
                     <DatePicker
                       label="Fecha"
@@ -207,7 +210,7 @@ export default function CarteleraForm() {
                     />
                   </Grid>
 
-                  {/* Campo de hora de inicio */}
+                 
                   <Grid item xs={12} sm={6}>
                     <TimePicker
                       label="Hora de inicio"
@@ -217,7 +220,7 @@ export default function CarteleraForm() {
                     />
                   </Grid>
 
-                  {/* Campo de hora final */}
+                  
                   <Grid item xs={12} sm={6}>
                     <TimePicker
                       label="Hora final"
@@ -258,6 +261,17 @@ export default function CarteleraForm() {
                 ))}
               </TextField>
 
+              <TextField
+                variant='filled'
+                value={cartelera.precio_ticket}
+                label='Precio por ticket de la cartelera'
+                sx={{ display: 'block', margin: '1rem 0' }}
+                name='precio_ticket'
+                onChange={handleChange}
+                inputProps={{ style: { color: 'black' } }}
+                fullWidth
+              />
+
               <Button
                 variant='contained'
                 color='primary'
@@ -268,6 +282,7 @@ export default function CarteleraForm() {
                   !cartelera.fecha ||
                   !cartelera.fecha_inicio ||
                   !cartelera.fecha_final ||
+                  !cartelera.precio_ticket ||
                   !cartelera.sala_id
                 }
                 fullWidth

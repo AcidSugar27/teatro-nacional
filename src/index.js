@@ -8,6 +8,7 @@ const carteleraroutes = require('./routes/cartelera.rutas');
 const loginroutes = require("./routes/login.rutas.js")
 const salaroutes = require("./routes/sala.rutas.js")
 const ticketroutes = require('./routes/tickets.rutas.js')
+const comprasroutes = require('./routes/compras.rutas.js')
 
 app.use(cors())
 app.use(morgan('dev'))
@@ -16,7 +17,7 @@ app.use('/uploads', express.static('uploads'));
 
 
 app.use(carteleraroutes, loginroutes, salaroutes)
-app.use(ticketroutes)
+app.use(ticketroutes, comprasroutes)
 
 app.use((err, req, res, next) => {
     return res.json({

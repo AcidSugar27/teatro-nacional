@@ -6,12 +6,12 @@ const ResetPassword = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const navigate = useNavigate(); // Hook para redirigir
+    const navigate = useNavigate(); 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Verificar que las contraseñas coincidan
+        
         if (newPassword !== confirmPassword) {
             return setMessage('Las contraseñas no coinciden');
         }

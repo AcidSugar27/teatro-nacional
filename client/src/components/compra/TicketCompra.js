@@ -1,139 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Typography, Grid, TextField, Card, CardContent, Divider } from '@mui/material';
+import { Button, Typography, Grid, TextField, Card, CardContent, Divider, Box, List, ListItem, ListItemText } from '@mui/material';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 
 export default function TicketCompra() {
-  const { id } = useParams(); // Obtener el id de la cartelera
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
-  const [ticketCount, setTicketCount] = useState(1); // Número de boletos a comprar
-  const [totalPrice, setTotalPrice] = useState(0); // Precio total
-  const [loading, setLoading] = useState(false);
+  const [ticketCount, setTicketCount] = useState(1);
   const [error, setError] = useState(null);
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
 
-  const ticketPrice = 500; // Valor fijo de la boleta en pesos (equivalente a 10 USD)
-  const serviceFeePercentage = 0.05; // 5% de servicio
-  const additionalFeesPercentage = 0.08; // 8% de gastos adicionales
-
-  // Fetch event details
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
         const response = await fetch(`http://localhost:4000/cartelera/${id}`);
+        if (!response.ok) throw new Error('Error al cargar los detalles del evento.');
         const data = await response.json();
         setEvent(data);
-        const total = ticketPrice * ticketCount;
-        const serviceFee = total * serviceFeePercentage;
-        const additionalFees = total * additionalFeesPercentage;
-        setTotalPrice(total + serviceFee + additionalFees); // Calcular el precio total con cargos adicionales
-      } catch (error) {
-        console.error('Error fetching event details:', error);
-        setError('Error al cargar los detalles de la cartelera.');
+      } catch (err) {
+        setError('Error al cargar los detalles del evento.');
       }
     };
     fetchEventDetails();
-  }, [id, ticketCount]);
+  }, [id]);
 
-  // Handler for ticket count change
   const handleTicketCountChange = (e) => {
     const count = Math.max(1, parseInt(e.target.value) || 1);
     setTicketCount(count);
-    const total = ticketPrice * count;
-    const serviceFee = total * serviceFeePercentage;
-    const additionalFees = total * additionalFeesPercentage;
-    setTotalPrice(total + serviceFee + additionalFees); // Actualizar el precio total
   };
 
-  // Handle Stripe payment
   const handlePayment = async (e) => {
     e.preventDefault();
     if (!stripe || !elements) {
+      console.log("Stripe no está disponible aún.");
       return;
     }
 
-    setLoading(true);
     setError(null);
 
-    // Crear un pago en el backend
-    const response = await fetch(`http://localhost:4000/cartelera/${id}/comprar`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({
-        cantidad: ticketCount,
-        total: totalPrice,
-      }),
-    });
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Usuario no autenticado.');
 
-    const paymentIntent = await response.json();
-
-    // Usar Stripe para confirmar el pago
-    const { error: stripeError, paymentIntent: stripePaymentIntent } = await stripe.confirmCardPayment(
-      paymentIntent.clientSecret,
-      {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
-      }
-    );
-
-    if (stripeError) {
-      setError(stripeError.message);
-      setLoading(false);
-    } else if (stripePaymentIntent.status === 'succeeded') {
-      // Confirmar compra en el backend
-      const confirmResponse = await fetch(`http://localhost:4000/cartelera/${id}/confirmar-compra`, {
+      const response = await fetch(`http://localhost:4000/cartelera/${id}/comprar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          cantidad: ticketCount,
-          total: totalPrice,
-          paymentIntentId: stripePaymentIntent.id,
-        }),
+        body: JSON.stringify({ cantidad_tickets: ticketCount }),
       });
 
-      const result = await confirmResponse.json();
-
-      if (result.success) {
-        setLoading(false);
-        alert('Compra realizada con éxito');
-        navigate(`/cartelera/${id}`);
-      } else {
-        setError('Error al confirmar la compra.');
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Error al iniciar la compra.');
       }
+
+      const data = await response.json();
+      const clientSecret = data.clientSecret;
+
+      if (!clientSecret || typeof clientSecret !== 'string') {
+        throw new Error('El backend no devolvió un client_secret válido.', clientSecret);
+      }
+
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        throw new Error('No se pudo obtener el elemento de la tarjeta.');
+      }
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          type: 'card',
+          card: cardElement,
+        },
+      });
+
+      if (stripeError) throw new Error(stripeError.message);
+
+      if (paymentIntent.status === 'succeeded') {
+        const confirmResponse = await fetch(`http://localhost:4000/cartelera/${id}/confirmar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ payment_intent_id: paymentIntent.id }),
+        });
+
+        if (!confirmResponse.ok) {
+          throw new Error('Error al confirmar la compra en la base de datos.');
+        }
+
+        alert('Compra realizada con éxito.');
+        navigate(`/compras/${paymentIntent.id}`);
+      } else {
+        throw new Error('El pago no se completó.');
+      }
+    } catch (err) {
+      setError(err.message || 'Ocurrió un error durante el pago.');
     }
   };
 
-  if (loading) {
-    return <Typography variant="h6">Procesando pago...</Typography>;
-  }
+  if (error) return <Typography variant="h6" color="error">{error}</Typography>;
+  if (!event) return <Typography variant="h6">Cargando detalles del evento...</Typography>;
 
-  if (error) {
-    return <Typography variant="h6" color="error">{error}</Typography>;
-  }
+  const TICKET_PRICE = event.precio_ticket;
+  const SERVICE_FEE_PERCENTAGE = 0.05;
+  const ADDITIONAL_FEES_PERCENTAGE = 0.08;
 
-  if (!event) {
-    return <Typography variant="h6">Cargando detalles de la cartelera...</Typography>;
-  }
+  const totalBase = TICKET_PRICE * ticketCount;
+  const serviceFee = totalBase * SERVICE_FEE_PERCENTAGE;
+  const additionalFees = totalBase * ADDITIONAL_FEES_PERCENTAGE;
+  const totalAmount = Math.round(totalBase + serviceFee + additionalFees);
 
   return (
     <Grid container spacing={2} justifyContent="center" alignItems="center">
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
-            <Typography variant="h5">{event.nombre}</Typography>
-            <Typography variant="body1">Fecha: {new Date(event.fecha).toLocaleDateString('es-ES')}</Typography>
-            <Typography variant="body2">Asientos disponibles: {event.capacidad_sala - event.boletos_vendidos}</Typography>
-            <Typography variant="body1">Precio por boleto: ${ticketPrice}</Typography>
+            <Typography variant="h5" gutterBottom>{event.nombre}</Typography>
+            <Typography variant="body1" gutterBottom>Fecha: {new Date(event.fecha).toLocaleDateString('es-ES')}</Typography>
+            <Typography variant="body2" gutterBottom>Asientos disponibles: {event.capacidad_sala - event.tickets_vendidos}</Typography>
             <TextField
               label="Cantidad de boletos"
               type="number"
@@ -143,15 +131,31 @@ export default function TicketCompra() {
               margin="normal"
               inputProps={{ min: 1 }}
             />
-            <Typography variant="h6">Total: ${totalPrice.toFixed(2)}</Typography>
             <Divider sx={{ my: 2 }} />
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" gutterBottom>Detalles del pago</Typography>
+              <List>
+                <ListItem>
+                  <ListItemText primary={`Precio por ticket: $${TICKET_PRICE}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={`Tarifa de servicio (5%): $${serviceFee}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={`Cargos adicionales (8%): $${additionalFees}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={`Total: $${totalAmount.toFixed(2)} Pesos`} />
+                </ListItem>
+              </List>
+            </Box>
             <form onSubmit={handlePayment}>
               <CardElement />
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={!stripe || loading}
+                disabled={!stripe}
                 fullWidth
                 sx={{ mt: 2 }}
               >
@@ -164,5 +168,4 @@ export default function TicketCompra() {
     </Grid>
   );
 }
-
 

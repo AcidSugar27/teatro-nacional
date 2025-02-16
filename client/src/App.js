@@ -15,16 +15,24 @@ import ResetPassword from './components/auth/reiniciarps';
 import VerifyEmail from './components/auth/verificacion';
 import CarteleraDetails from './components/cartelera/CarteleraDetails';
 import TicketCompra from './components/compra/TicketCompra';
+import TicketConfirmacion from './components/compra/TicketConfirmacion';
+import Ticketconsulta from './components/compra/TicketConsulta';
+import TicketTodos from './components/compra/TicketTodos';
 
-// Cargar Stripe con tu clave pública
-const stripePromise = loadStripe('pk_test_51QIsRaHlnQXc8B6sqQ1JcAwZx9g1LpMoyeDGIkRPVO8ulbVlymuetk88w7yexjWv0988pMD1Zpvi8X2TOI17BAqI00BqyCi3Hw');
+
+const promise = loadStripe("pk_test_51QIsRaHlnQXc8B6sqQ1JcAwZx9g1LpMoyeDGIkRPVO8ulbVlymuetk88w7yexjWv0988pMD1Zpvi8X2TOI17BAqI00BqyCi3Hw");
 
 export default function App() {
+  
+ 
+ 
+  
   return (
+    <Elements stripe={promise}> 
     <BrowserRouter>
       <Menu />
       <Container>
-        <Elements stripe={stripePromise}>  {/* Agregar Elements aquí */}
+         
           <Routes>
             <Route path='/' element={<CarteleraList />} />
             <Route path='/cartelera/new' element={<CarteleraForm />} />
@@ -39,10 +47,15 @@ export default function App() {
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/cartelera/:id/" element={<CarteleraDetails />} />
             <Route path="/cartelera/:id/comprar" element={<TicketCompra />} />
+            <Route path="/compras/:payment_intent_id" element={<TicketConfirmacion />} />
+            <Route path="/mis-ordenes" element={<Ticketconsulta/>} />
+            <Route path="/todas-las-ordenes" element={<TicketTodos/>} />
+
           </Routes>
-        </Elements> {/* Cerrar Elements aquí */}
+       
       </Container>
     </BrowserRouter>
+    </Elements>
   );
 }
 

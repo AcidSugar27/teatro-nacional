@@ -1,18 +1,41 @@
-// routes.js
 const { Router } = require('express');
 
-
-const authenticateToken = require('../middleware/auth.middleware'); // Middleware para autenticar usuarios
-const {comprarTickets, confirmarCompra} = require('../controllers/tickets.controller')
+const { authenticateToken } = require('../middleware/auth.middleware'); 
+const { comprarTickets, confirmarCompra, obtenerCompra } = require('../controllers/tickets.controller');
 
 const router = Router();
-// Ruta para comprar boletos asociados a una cartelera específica
-router.post('/cartelera/:id/comprar',  comprarTickets);
 
-// Ruta para confirmar la compra y actualizar el conteo de boletos vendidos
-router.post('/cartelera/:id/confirmar-compra',  confirmarCompra);
+/*
+const validatePurchaseRequest = (req, res, next) => {
+    const { cantidad_tickets } = req.body;
+    if (!cantidad_tickets || cantidad_tickets <= 0) {
+        return res.status(400).json({ message: "La cantidad de tickets debe ser un número mayor a 0" });
+    }
+    next();
+};
+
+*/
+router.post(
+    '/cartelera/:id/comprar',
+              
+    authenticateToken,
+    comprarTickets             
+);
+
+router.post(
+    '/cartelera/:id/confirmar',
+     authenticateToken,      
+    confirmarCompra             
+);
+
+router.get(
+    '/compras/:payment_intent_id',
+    authenticateToken,
+    obtenerCompra
+  );
 
 module.exports = router;
+
 
 
 

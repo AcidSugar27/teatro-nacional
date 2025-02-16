@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Button, Container, Toolbar, Typography, Box, MenuItem, Select, IconButton, Menu } from '@mui/material';
+import { AppBar, Button, Toolbar, Typography, Box, MenuItem, Select, IconButton, Menu } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -49,13 +49,23 @@ export default function Navbar() {
     };
 
     return (
-        <Box sx={{ flexGrow: 1}}>
+        <Box sx={{ width: '100%', maxWidth: '2500px', margin: '0 auto' }}>
             <AppBar position="static" sx={{backgroundColor:'black'}}>
-                <Container >
+                
                     <Toolbar>
-                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                            <Link to="/" style={{ textDecoration: 'none', color: '#eee' }}>TEATRO NACIONAL</Link>
-                        </Typography>
+                        <Link to={"/"}  underline='none'>
+                        <Box 
+                        component="img"
+                        src="/teatroeduardo.png" 
+                        alt="Teatro Eduardo"
+                        sx={{ 
+                            height: 80, 
+                            marginRight: 40,
+                            flexGrow: 1,
+                        }}
+                        />
+                        </Link>
+                       
 
                         {isMobile ? (
                             <>
@@ -121,7 +131,7 @@ export default function Navbar() {
                             </>
                         )}
                     </Toolbar>
-                </Container>
+                
             </AppBar>
         </Box>
     );
